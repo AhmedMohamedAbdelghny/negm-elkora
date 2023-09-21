@@ -14,6 +14,7 @@ router.get("/rfreashToken/:token", validation(CV.rfreashToken), CC.rfreashToken)
 router.patch("/forgetPassword", validation(CV.forgetPassword), CC.forgetPassword);
 router.patch("/resetPassword/:token", validation(CV.resetPassword), CC.resetPassword);
 router.post("/signIn", validation(CV.signIn), CC.signIn);
+router.get("/", CC.getAllCaptains);
 
 /**
  * 1 get all captins

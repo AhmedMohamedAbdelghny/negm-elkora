@@ -102,11 +102,11 @@ export const forgetPassword = asyncHandler(async (req, res, next) => {
     return next(new AppError("email not exist", 401));
   }
   //generate code to more secure
-  const code = nanoid(4)
-  const hashCode = bcrypt.hashSync(code, +process.env.saltOrRounds)
-  const token = jwt.sign({ email, code: hashCode }, process.env.signature, { expiresIn: 60 })
+  const code = nanoid(6)
+  const token = jwt.sign({ email }, process.env.signature, { expiresIn: 60 })
   const link = `${req.protocol}://${req.headers.host}/childs/resetPassword/${token}`
-  const sended = await sendEmail(email, "resetPassword", `<a href="${link}">resetPassword</a>`)
+  const sended = await sendEmail(email, "resetPassword", `<a href="${link}">resetPassword</a>  <br>
+  <h1>${code}</h1>`)
   if (!sended) {
     return next(new AppError("email not exist", 401));
   }
@@ -117,7 +117,7 @@ export const forgetPassword = asyncHandler(async (req, res, next) => {
 
 //**************************resetPassword******************* *//
 export const resetPassword = asyncHandler(async (req, res, next) => {
-  const { newPassword } = req.body
+  const { newPassword, rePassword, code } = req.body
   const { token } = req.params;
   if (!token) {
     return next(new AppError("token not  exist", 401));
@@ -126,18 +126,12 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
   if (!decoded) {
     return next(new AppError("invalid token", 401));
   }
-  const child = await childModel.findOne({ email: decoded.email })
+  const child = await childModel.findOne({ email: decoded.email, code })
   if (!child) {
     return next(new AppError("child not exist or invalid code", 401));
   }
-  //compare code
-  const match = bcrypt.compareSync(decoded.code, child.code)
-  if (!match) {
-    return next(new AppError("invalid Code", 401));
-  }
   //hash
   const hashePassword = bcrypt.hashSync(newPassword, +process.env.saltOrRounds)
-
   const newchild = await childModel.updateOne({ email: decoded.email },
     { password: hashePassword, code: null, changePassAt: Date.now() })
 
@@ -145,6 +139,7 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
     res.status(201).json({ msg: "done" })
     : next(new AppError("fail", 400));
 });
+
 
 
 //**************************signIn******************* *//
@@ -186,6 +181,25 @@ export const uploadVideos = asyncHandler(async (req, res, next) => {
 });
 
 
+//**************************get all childs that doing certain task******************* *//
+export const getChildsDoingTasks = asyncHandler(async (req, res, next) => {
+  const { taskId } = req.query;
+  const childs = await childModel.find({ "tasks.taskId": taskId }).select("name email");
+  if (!childs.length) {
+    return next(new AppError("no one do it yet", 404));
+  }
+  res.status(200).json({ msg: "done", childs })
+});
+
+
+//**************************get certain child with his  tasks******************* *//
+export const getChildWithTasks = asyncHandler(async (req, res, next) => {
+  const child = await childModel.findById(req.user._id).select("name email tasks subDegree -_id");
+  if (!child) {
+    return next(new AppError("user not exist", 404));
+  }
+  res.status(200).json({ msg: "done", child })
+});
 
 
 

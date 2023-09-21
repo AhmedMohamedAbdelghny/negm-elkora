@@ -3,7 +3,7 @@ import * as CHC from "./child.controller.js";
 import { allowedValidation, multerCloudinary } from "../../utils/multerCloud.js";
 import * as CHV from "./child.validation.js";
 import { validation } from "../../middleware/validation.js";
-import { auth } from "../../middleware/auth.js";
+import { auth, role } from "../../middleware/auth.js";
 
 
 
@@ -25,6 +25,8 @@ router.patch("/uploadVideos",
     multerCloudinary(allowedValidation.video).array("videos", 1),
     validation(CHV.uploadVideos),
     CHC.uploadVideos);
-
+    
+router.get("/", CHC.getChildsDoingTasks);
+router.get("/tasks", auth(role.Child), CHC.getChildWithTasks);
 
 export default router;

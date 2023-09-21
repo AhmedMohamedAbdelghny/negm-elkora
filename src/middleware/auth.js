@@ -4,7 +4,7 @@ import { asyncHandler } from '../utils/globalError.js';
 import childModel from '../../DB/models/child.model.js';
 import captainModel from './../../DB/models/captain.model.js';
 
-const role = {
+export const role = {
     Child: ["Child"],
     Admin: ["Admin"],
     captain: ["Captain"]

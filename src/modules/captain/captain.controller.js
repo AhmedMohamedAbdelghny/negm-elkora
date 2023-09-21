@@ -85,10 +85,11 @@ export const forgetPassword = asyncHandler(async (req, res, next) => {
     return next(new AppError("email not exist", 401));
   }
   const code = nanoid(4)
-  const hashCode = bcrypt.hashSync(code, +process.env.saltOrRounds)
-  const token = jwt.sign({ email, code: hashCode }, process.env.signature, { expiresIn: 60 })
+
+  const token = jwt.sign({ email }, process.env.signature, { expiresIn: 60 })
   const link = `${req.protocol}://${req.headers.host}/captains/resetPassword/${token}`
-  const sended = await sendEmail(email, "resetPassword", `<a href="${link}">resetPassword</a>`)
+  const sended = await sendEmail(email, "resetPassword", `<a href="${link}">resetPassword</a> <br>
+  <h1>${code}</h1>`)
   if (!sended) {
     return next(new AppError("email not exist", 401));
   }
@@ -96,10 +97,9 @@ export const forgetPassword = asyncHandler(async (req, res, next) => {
   res.status(201).json({ msg: "done check your email  to resetPassword", link })
 });
 
-
 //**************************resetPassword******************* *//
 export const resetPassword = asyncHandler(async (req, res, next) => {
-  const { newPassword } = req.body
+  const { newPassword, rePassword, code } = req.body
   const { token } = req.params;
   if (!token) {
     return next(new AppError("token not  exist", 401));
@@ -108,14 +108,11 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
   if (!decoded) {
     return next(new AppError("invalid token", 401));
   }
-  const captain = await captainModel.findOne({ email: decoded.email })
+  const captain = await captainModel.findOne({ email: decoded.email, code })
   if (!captain) {
     return next(new AppError("captain not exist or invalid code", 401));
   }
-  const match = bcrypt.compareSync(decoded.code, captain.code)
-  if (!match) {
-    return next(new AppError("invalid Code", 401));
-  }
+
   const hashePassword = bcrypt.hashSync(newPassword, +process.env.saltOrRounds)
 
   const newcaptain = await captainModel.updateOne({ email: decoded.email },
@@ -125,6 +122,7 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
     res.status(201).json({ msg: "done" })
     : next(new AppError("fail", 400));
 });
+
 
 
 //**************************signIn******************* *//
@@ -143,3 +141,11 @@ export const signIn = asyncHandler(async (req, res, next) => {
 });
 
 
+//**************************getAllCaptains******************* *//
+export const getAllCaptains = asyncHandler(async (req, res, next) => {
+  const captains = await captainModel.find({});
+  if (!captains.length) {
+    return next(new AppError("ther is no captains found", 404));
+  }
+  res.status(200).json({ msg: "done", captains })
+});

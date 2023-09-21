@@ -32,6 +32,8 @@ export const forgetPassword = joi.object({
 export const resetPassword = joi.object({
     token: joi.string().required(),
     newPassword: generalFiled.password,
+    rePassword: joi.string().valid(joi.ref("newPassword")).required(),
+    code: joi.string().min(6).max(6).required(),
 }).required()
 
 export const signIn = joi.object({

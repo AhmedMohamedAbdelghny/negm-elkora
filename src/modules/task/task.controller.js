@@ -76,17 +76,6 @@ export const doTask = asyncHandler(async (req, res, next) => {
   }
   const child = await childModel.findOne({ _id: req.user._id })
   if (child) {
-    // let match = false
-    // for (let i = 0; i < child.tasks.length; i++) {
-    //   if (child.tasks[i].taskId.toString() == taskId) {
-    //     child.tasks[i].degree.degree
-    //     match = true
-    //     break;
-    //   }
-    // }
-    // if (!match) {
-    //   await child.tasks.push({ taskId, degree })
-    // }
     const index = child.tasks.findIndex((ele) => {
       return ele.taskId.toString() == taskId
     })
@@ -107,12 +96,32 @@ export const doTask = asyncHandler(async (req, res, next) => {
 });
 
 
-//**************************getUserTasks******************* *//
-export const getChildTasks = asyncHandler(async (req, res, next) => {
+//**************************get all tasks with all child doing it******************* *//
+export const TaskswithChild = asyncHandler(async (req, res, next) => {
 
-  const child = await childModel.findById(req.user._id).select("tasks subDegree -_id");
-  if (!child) {
+  const tasks = await taskModel.find({}).populate([
+    {
+      path: "Child",
+      select: "name email"
+    }
+  ]);
+  if (!tasks.length) {
     return next(new AppError("user not exist", 401));
   }
-  res.status(201).json({ msg: "done", child })
+  res.status(200).json({ msg: "done", tasks })
+});
+
+
+//**************************get certain task with certain user******************* *//
+export const TasksOfCertainChild = asyncHandler(async (req, res, next) => {
+  const child = await childModel.findById(req.user._id)
+  let idsArr = [];
+  for (const task of child.tasks) {
+    idsArr.push(task.taskId)
+  }
+  const tasks = await taskModel.find({ _id: { $in: idsArr } })
+  if (!tasks.length) {
+    return next(new AppError("tasks not exist", 401));
+  }
+  res.status(200).json({ msg: "done", tasks })
 });
