@@ -15,6 +15,7 @@ router.patch("/:id", validation(TV.updateTask), TC.updateTask);
 router.delete("/:id", validation(TV.deleteTask), TC.deleteTask);
 router.put("/:id", auth(), TC.doTask);
 router.get("/TasksOfCertainChild", auth(role.Child), TC.TasksOfCertainChild);
+router.get("/TasksNotOfCertainChild", auth(role.Child), TC.TasksNotOfCertainChild);
 router.get("/TaskswithChild", TC.TaskswithChild);
 router.get("/allTasks", TC.getTasks);
 router.get("/:id", TC.getOneTask);

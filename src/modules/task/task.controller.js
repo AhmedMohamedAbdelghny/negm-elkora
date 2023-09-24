@@ -125,3 +125,18 @@ export const TasksOfCertainChild = asyncHandler(async (req, res, next) => {
   }
   res.status(200).json({ msg: "done", tasks })
 });
+
+
+//**************************get tasks with certain user not doing******************* *//
+export const TasksNotOfCertainChild = asyncHandler(async (req, res, next) => {
+  const child = await childModel.findById(req.user._id)
+  let idsArr = [];
+  for (const task of child.tasks) {
+    idsArr.push(task.taskId)
+  }
+  const tasks = await taskModel.find({ _id: { $nin: idsArr } })
+  if (!tasks.length) {
+    return next(new AppError("tasks not exist", 401));
+  }
+  res.status(200).json({ msg: "done", tasks })
+});

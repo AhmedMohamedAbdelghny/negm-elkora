@@ -71,3 +71,11 @@ export const deleteAssignment = asyncHandler(async (req, res, next) => {
   res.status(200).json({ msg: "done" })
 });
 
+//**************************getAllAssignment******************* *//
+export const getAllAssignment = asyncHandler(async (req, res, next) => {
+  const assignments = await assignmentModel.find({});
+  if (!assignments.length) {
+    return next(new AppError("not assignment exist", 401));
+  }
+  res.status(200).json({ msg: "done", assignments })
+});

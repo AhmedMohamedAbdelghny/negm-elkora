@@ -25,7 +25,7 @@ router.patch("/uploadVideos",
     multerCloudinary(allowedValidation.video).array("videos", 1),
     validation(CHV.uploadVideos),
     CHC.uploadVideos);
-    
+router.get("/degree", CHC.getChildDgree);
 router.get("/", CHC.getChildsDoingTasks);
 router.get("/tasks", auth(role.Child), CHC.getChildWithTasks);
 

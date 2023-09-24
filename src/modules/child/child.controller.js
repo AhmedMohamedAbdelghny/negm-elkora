@@ -202,5 +202,15 @@ export const getChildWithTasks = asyncHandler(async (req, res, next) => {
 });
 
 
+//**************************sort child with his degree******************* *//
+export const getChildDgree = asyncHandler(async (req, res, next) => {
+  const childs = await childModel.find({}).sort({ subDegree: -1 });
+  if (!childs.length) {
+    return next(new AppError("no childs exist", 404));
+  }
+  res.status(200).json({ msg: "done", childs })
+});
+
+
 
 
